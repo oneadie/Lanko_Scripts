@@ -13,25 +13,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Setup build environment
-      run: |
-        sudo apt update
-        sudo apt install -y build-essential rpm devscripts
+      - name: Setup build environment
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential rpm devscripts dpkg
 
-    - name: Prepare RPM directories
-      run: |
-        mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-        cp scripts/count_files.sh ~/rpmbuild/SOURCES/
-        cp specs/count_files.spec ~/rpmbuild/SPECS/
+      - name: Prepare RPM directories
+        run: |
+          mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+          cp scripts/count_files.sh ~/rpmbuild/SOURCES/
+          cp specs/count_files.spec ~/rpmbuild/SPECS/
 
-    - name: Build RPM package
-      run: |
-        rpmbuild -ba ~/rpmbuild/SPECS/count_files.spec
+      - name: Build RPM package
+        run: |
+          rpmbuild -ba ~/rpmbuild/SPECS/count_files.spec
 
-    - name: Build DEB package
-      run: |
-        cd packages
-        dpkg-deb --build count-files_1.0-2_amd64.deb
+      - name: Build DEB package
+        run: |
+          mkdir -p ~/deb-package/usr/local/bin
+          cp scripts/count_files.sh ~/deb-package/usr/local/bin/
+
+          mkdir -p ~/deb-package/DEBIAN
+          echo "Package: count-files
+          Version: 1.0-2
+          Architecture: amd64
+          Maintainer: oneadie
+          Description: A script to count files excluding directories and links in /etc" > ~/deb-package/DEBIAN/control
+          dpkg-deb --build ~/deb-package
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: |
+            ~/rpmbuild/RPMS/
+            ~/rpmbuild/SRPMS/
+            ~/deb-package/*.deb
