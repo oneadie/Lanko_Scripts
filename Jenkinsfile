@@ -25,9 +25,17 @@ pipeline {
                 '''
             }
         }
+        stage('Download script') {
+            steps {
+                sh '''
+                    curl -L https://github.com/oneadie/Lanko_Scripts/raw/main/scripts/count_files.sh -o /tmp/count_files.sh
+                    chmod +x /tmp/count_files.sh
+                '''
+            }
+        }
         stage('Run script') {
             steps {
-                sh '/usr/local/bin/count_files.sh'
+                sh '/tmp/count_files.sh'
             }
         }
     }
