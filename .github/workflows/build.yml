@@ -33,6 +33,7 @@ jobs:
 
       - name: Build DEB package
         run: |
+          set -e
           mkdir -p ~/deb-package/usr/local/bin
           cp scripts/count_files.sh ~/deb-package/usr/local/bin/
 
@@ -43,6 +44,10 @@ jobs:
           Maintainer: oneadie
           Description: A script to count files excluding directories and links in /etc" > ~/deb-package/DEBIAN/control
           dpkg-deb --build ~/deb-package
+
+      - name: Check files before uploading
+        run: |
+          ls ~/deb-package/*.deb
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
