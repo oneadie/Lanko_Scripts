@@ -33,7 +33,8 @@ jobs:
 
       - name: Build DEB package
         run: |
-          echo "Building DEB package..."
+          set -e
+          echo "Building DEB package"
           mkdir -p ~/deb-package/usr/local/bin
           cp scripts/count_files.sh ~/deb-package/usr/local/bin/
           mkdir -p ~/deb-package/DEBIAN
@@ -42,9 +43,16 @@ jobs:
           Architecture: amd64
           Maintainer: oneadie
           Description: A script to count files excluding directories and links in /etc" > ~/deb-package/DEBIAN/control
-          dpkg-deb --build ~/deb-package count-files_1.0-2_amd64.deb
+          echo "Contents of ~/deb-package before dpkg-deb:"
+          ls -lR ~/deb-package
+          dpkg-deb --build ~/deb-package
           echo "Contents of ~/deb-package after dpkg-deb:"
           ls -lR ~/deb-package
+
+      - name: Check files before uploading
+        run: |
+          echo "Checking for .deb files:"
+          ls /home/runner/*.deb || echo "No .deb files found"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
@@ -53,4 +61,4 @@ jobs:
           path: |
             ~/rpmbuild/RPMS/
             ~/rpmbuild/SRPMS/
-            /home/runner/count-files_1.0-2_amd64.deb
+            /home/runner/*.deb
